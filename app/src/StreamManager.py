@@ -1,0 +1,47 @@
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from .streams.UDPStream import UDPStream
+import json
+
+class StreamManager:
+    '''A factory class for stream objects; provides API endpoints'''
+    # This class is a singleton
+    instance = None
+    def __init__(self):
+        if StreamManager.instance:
+            raise AttributeError(
+                'Attempted to instantiate more than one instance of singleton'
+                'class "StreamManager"'
+            )
+        self.router = APIRouter(prefix='/stream_manager', tags=['stream'])
+        self.router.add_api_route('/create/udp', 
+                                   self.create_udp_stream,
+                                   methods=['POST'])
+        self.router.add_api_route('/get_streams',
+                                  self.get_streams,
+                                  methods=['GET'])
+        self.streams = {}
+        StreamManager.instance = self
+
+    class UDPRequest(BaseModel):
+        name: str
+        ip: str
+        port: int
+        recv_buffer: int | None
+        parsers: list[str] | None
+
+    async def create_udp_stream(self, request: UDPRequest):
+        try:
+            udp_stream = UDPStream(request.name, request.ip, request.port, 
+            recv_buffer=request.recv_buffer if request.recv_buffer else 1024,
+            parsers=request.parsers if request.parsers else [])
+            if request.name in self.streams:
+                raise ValueError(f'Stream with name {request.name} already '
+                                 'exists!')    
+            self.streams[request.name] = udp_stream
+            return {'success': True}
+        except Exception as e:
+            raise HTTPException(400, str(e))
+        
+    async def get_streams(self):
+        return {'streams' : [s.jsonify() for s in self.streams.values()]}

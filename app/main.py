@@ -1,16 +1,11 @@
-# import flask
-
-# app = flask.Flask(__name__)
-
-# @app.route('/')
-# def home():
-#     return flask.render_template('index.html')
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from .src.routers import stream_api
+from .src.StreamManager import StreamManager
 
 app = FastAPI()
-app.mount('/', StaticFiles(directory='static', html=True), name='static')
 
-# @app.get('/')
-# async def root():
-#     return StaticFiles.file_response('index.html')
+app.mount('/home', StaticFiles(directory='static', html=True), name='static')
+
+stream_manager = StreamManager()
+app.include_router(stream_manager.router)

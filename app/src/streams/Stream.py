@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from ..Parser import Parser
+from ..parsers.Parser import Parser
 
 class Stream(ABC):
     '''A Stream is an abstraction for a connection to a datastream from ROS,

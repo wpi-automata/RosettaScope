@@ -32,6 +32,10 @@ class StreamManager:
         recv_buffer: int | None
         parsers: list[str] | None
 
+    def register_parser(self, parser, target_streams: list[str]):
+        for s in target_streams:
+            self.streams[s].register_parser(parser)
+
     async def create_udp_stream(self, request: UDPRequest):
         try:
             udp_stream = UDPStream(request.name, request.ip, request.port, 

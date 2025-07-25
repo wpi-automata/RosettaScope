@@ -1,5 +1,7 @@
 from app.src.streams.Stream import Stream
 import socket
+import logging
+import asyncio
 
 class UDPStream(Stream):
     def __init__(self, name: str, ip: str, port: int, recv_buffer=1024, parsers=[]):
@@ -8,8 +10,10 @@ class UDPStream(Stream):
         self._recv_buffer = 1024
         self._name = name
         self.stream_type = 'UDP'
-        self.connect()
-
+        # self.connect()
+        self.logger = logging.getLogger('api')
+        self.logger.setLevel(logging.DEBUG)
+        self.async_sock: asyncio.l
     # Properties and setters
     @property
     def name(self):
@@ -46,14 +50,16 @@ class UDPStream(Stream):
     def port(self, new_port):
         self.addr = (self.addr[0], new_port)
     
-    def connect(self):
+    async def connect(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.sock.bind(self._addr)
+        self.async_sock = await asyncio.get_event_loop().create_datagram_endpoint(
+            UDPProtocol, sock=self.sock
+        )
 
-    def listen(self):
-        source, data = self.sock.recvfrom(self._recv_buffer)
-        return source, data
+    async def listen(self):
+        pass
     
     def jsonify(self):
         return super().jsonify() | {
@@ -62,3 +68,10 @@ class UDPStream(Stream):
             'recv_buffer': self._recv_buffer
         }
 
+
+class UDPProtocol(asyncio.DatagramProtocol):
+    def datagram_received(self, data, addr):
+        print(data)
+
+    def error_received(self, exc):
+        raise exc

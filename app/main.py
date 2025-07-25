@@ -3,8 +3,13 @@ from fastapi.staticfiles import StaticFiles
 from .src.routers import stream_api
 from .src.StreamManager import StreamManager
 from fastapi.middleware.cors import CORSMiddleware
+import asyncio
+import contextlib
 
+stream_manager = StreamManager()
 app = FastAPI()
+
+app.include_router(stream_manager.router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=['*'],
@@ -12,7 +17,3 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# app.mount('/home', StaticFiles(directory='static', html=True), name='static')
-
-stream_manager = StreamManager()
-app.include_router(stream_manager.router)

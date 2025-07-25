@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from .streams.UDPStream import UDPStream
-import json
+from .streams.Stream import Stream
+import threading
 
 class StreamManager:
     '''A factory class for stream objects; provides API endpoints'''
@@ -21,6 +22,7 @@ class StreamManager:
                                   self.get_streams,
                                   methods=['GET'])
         self.streams = {}
+        self.threads = {}
         StreamManager.instance = self
 
     class UDPRequest(BaseModel):
@@ -35,6 +37,7 @@ class StreamManager:
             udp_stream = UDPStream(request.name, request.ip, request.port, 
             recv_buffer=request.recv_buffer if request.recv_buffer else 1024,
             parsers=request.parsers if request.parsers else [])
+            await udp_stream.connect()
             if request.name in self.streams:
                 raise ValueError(f'Stream with name {request.name} already '
                                  'exists!')    
@@ -45,3 +48,10 @@ class StreamManager:
         
     async def get_streams(self):
         return {'streams' : [s.jsonify() for s in self.streams.values()]}
+    
+    async def loop(self):
+        while True:
+            s: Stream
+            for s in self.streams.values():
+                await s.listen()
+

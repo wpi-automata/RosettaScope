@@ -29,11 +29,14 @@ class ParserManager:
 
     async def create_parser(self, request: CreateParserRequest):
         try:
+            if request.name in self.parsers:
+                raise ValueError(f'Parser named {request.name} already exists')
             match request.type:
                 case '':
                     parser = Parser(request.name)
                     self.stream_manager.register_parser(parser, 
                                                         request.streams)
+                    self.parsers[request.name] = parser
                     return {'success' : True}
                 case _:
                     raise ValueError(f'{request.type} is not a valid type of '

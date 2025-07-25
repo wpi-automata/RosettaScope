@@ -5,7 +5,7 @@
         </template>
          <template v-slot:default="{ isActive }">
             <v-card title="Create a new stream:">
-                <v-form v-model="valid" validate-on="submit lazy" @submit.prevent="submit">
+                <v-form v-model="valid" validate-on="submit" @submit.prevent="submit">
                     <v-radio-group v-model="form_stream_type">
                         <v-radio v-for="type in stream_types"
                         :label="type" :value="type"></v-radio>
@@ -40,6 +40,7 @@
                         </v-text-field>
                     </v-container>
                     <v-btn
+                    v-model="btn_val"
                     text="submit"
                     type="submit"
                     block></v-btn>
@@ -54,7 +55,7 @@
             </v-card>
          </template>
     </v-dialog>
-    <v-alert v-model="alerting" :type="alert_type" dismissible>
+    <v-alert class="alert_sty" v-model="alerting" :type="alert_type" closable>
         {{ alert_msg }}
     </v-alert>
 </template>
@@ -72,6 +73,7 @@
     const alerting = ref(false)
     const alert_type = ref('success')
     const alert_msg = ref('success')
+    const btn_val = true
 
     const name_rules = [
         inp => {
@@ -153,7 +155,17 @@
             alert_type.value = 'error'
             alert_msg.value = response.response.data.detail
             alerting.value = true
+        }).finally((response) => {
+            // setTimeout(() => {
+            //     alerting.value = false
+            // }, 2000)
         })
     }
-    
 </script>
+
+<style>
+    .alert_sty {
+        position: fixed;
+        bottom: 0;
+    }
+</style>

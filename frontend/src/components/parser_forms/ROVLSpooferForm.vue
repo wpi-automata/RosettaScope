@@ -1,69 +1,72 @@
 <template>
-    <v-dialog max-width="500px">
-        <template v-slot:activator="{props: activatorProps}">
-            <v-btn v-bind="activatorProps">Add Parser</v-btn>
-        </template>
-         <template v-slot:default="{ isActive }">
-            <v-card title="Create a new Parser:">
-                <v-radio-group v-model="form_parser_type">
-                    <v-radio v-for="type in parser_types"
-                    :label="type" :value="type"></v-radio>
-                </v-radio-group>
-                
-                <v-form v-model="valid" validate-on="submit" 
-                @submit.prevent="submit"
-                v-if="form_parser_type==''">
-                    <v-container>
-                        <v-text-field
-                        v-model="form_parser_name"
-                        :rules="name_rules"
-                        label="Parser name:"
-                        required>
-                        </v-text-field>
+    <v-form v-model="valid" validate-on="submit" @submit.prevent="submit">
+        <v-container>
+            <v-text-field
+            v-model="form_parser_name"
+            :rules="name_rules"
+            label="Parser name:"
+            required>
+            </v-text-field>
 
-                        <v-select
-                        v-model="form_parser_stream"
-                        label="Choose a stream (or multiple)"
-                        :items="stream_list">
-                        </v-select>
-                    </v-container>
-                    <v-btn
-                    v-model="btn_val"
-                    text="submit"
-                    type="submit"
-                    block></v-btn>
-                </v-form> 
-                <ROVLSpooferForm v-else-if="form_parser_type =='rovlspoof'"></ROVLSpooferForm>       
-                <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                    text="Close Dialog"
-                    @click="isActive.value = false"
-                    ></v-btn>
-                </v-card-actions>
-            </v-card>
-         </template>
-    </v-dialog>
-    <v-alert class="alert_sty" v-model="alerting" :type="alert_type" closable>
-        {{ alert_msg }}
-    </v-alert>
+            <v-select
+            v-model="form_parser_stream"
+            label="Choose a stream (or multiple)"
+            :items="stream_list">
+            </v-select>
+
+            <v-text-field
+            v-model="form_parser_bind_ip"
+            :rules="ip_rules"
+            label="Bind IP:"
+            required>
+            </v-text-field>
+
+            <v-text-field
+            v-model="form_parser_bind_port"
+            :rules="port_rules"
+            label="Bind port:"
+            required>
+            </v-text-field>
+
+            <v-text-field
+            v-model="form_parser_output_ip"
+            :rules="ip_rules"
+            label="Output IP:"
+            required>
+            </v-text-field>
+
+            <v-text-field
+            v-model="form_parser_output_port"
+            :rules="port_rules"
+            label="Output port:"
+            required>
+            </v-text-field>
+        </v-container>
+        <v-btn
+        v-model="btn_val"
+        text="submit"
+        type="submit"
+        block></v-btn>
+    </v-form>
 </template>
 
 <script setup>
     import axios from 'axios';
-    import { onBeforeMount, ref } from 'vue';
-    import ROVLSpooferForm from './parser_forms/ROVLSpooferForm.vue'
+    import { onBeforeMount, ref, onMounted} from 'vue';
     const valid = ref(false)
     const form_parser_name = ref('')
     const form_parser_type = ref('')
     const form_parser_stream = ref('')
-    const parser_types = ['', 'rovlspoof']  // Should make a getter on the backend 
+    const parser_types = ['']  // Should make a getter on the backend 
     const alerting = ref(false)
     const alert_type = ref('success')
     const alert_msg = ref('success')
     const btn_val = true
-
     const stream_list = ref([])
+    const form_parser_bind_ip = ref('')
+    const form_parser_bind_port = ref(0)
+    const form_parser_output_ip = ref('')
+    const form_parser_output_port = ref(0)
 
     const name_rules = [
         inp => {
@@ -109,28 +112,17 @@
         }
     ]
 
-    const buffer_rules = [
-        inp => {
-            if (inp) return true
-            return 'this is a mandatory field.'
-        },
-        inp => {
-            if (Number.isInteger(Number(inp))) {
-                return true
-            }
-            else {
-                return 'Please enter an integer.'
-            }
-        }
-    ]
-
     async function submit(form_data) {
         if (!valid.value) return
         const response = await axios.post('http://127.0.0.1:8000/parser_manager/create',
             {
                 'name': form_parser_name.value,
-                'type': form_parser_type.value,
-                'streams': [form_parser_stream.value]
+                'type': 'rovlspoof',
+                'streams': [form_parser_stream.value],
+                'bind_ip': form_parser_bind_ip.value,
+                'bind_port': form_parser_bind_port.value,
+                'output_ip': form_parser_output_ip.value,
+                'output_port': form_parser_output_port.value
             }
         ).then((response) => {
             console.log(response)
@@ -163,15 +155,16 @@
         return
     }
 
+    // onMounted(async () => {
+    //     stream_list.value = await get_data()
+    //     console.log(stream_list.value)
+    // })
     onBeforeMount(async () => {
         stream_list.value = await get_data()
+        console.log('bingus')
         console.log(stream_list.value)
     })
+    // stream_list.value = await get_data()
+    // console.log(stream_list.value)
+    // console.log('bingus')
 </script>
-
-<style>
-    .alert_sty {
-        position: fixed;
-        bottom: 0;
-    }
-</style>

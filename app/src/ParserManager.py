@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from .parsers.Parser import Parser
+from .parsers.ROVLSpoof import ROVLSpoof
 from .StreamManager import StreamManager
 class ParserManager:
     '''A factory class for parrsers; provides API endpoitns'''
@@ -26,6 +27,10 @@ class ParserManager:
         name: str
         type: str
         streams: list[str]
+        bind_ip: str | None
+        bind_port: int | None
+        output_ip: str | None
+        output_port: int | None
 
     async def create_parser(self, request: CreateParserRequest):
         try:
@@ -34,6 +39,16 @@ class ParserManager:
             match request.type:
                 case '':
                     parser = Parser(request.name)
+                    self.stream_manager.register_parser(parser, 
+                                                        request.streams)
+                    self.parsers[request.name] = parser
+                    return {'success' : True}
+                case 'rovlspoof':
+                    parser = ROVLSpoof(request.name,
+                                       request.bind_ip,
+                                       request.bind_port,
+                                       request.output_ip,
+                                       request.output_port)
                     self.stream_manager.register_parser(parser, 
                                                         request.streams)
                     self.parsers[request.name] = parser

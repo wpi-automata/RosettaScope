@@ -45,4 +45,5 @@ class ParserManager:
             raise HTTPException(400, str(e))
         
     async def get_parsers(self):
-        raise HTTPException(501, 'not implemented :(')
+        # raise HTTPException(501, 'not implemented :(')
+        return {'parsers' : [p.jsonify() for p in self.parsers.values()]}

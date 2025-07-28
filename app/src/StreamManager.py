@@ -77,7 +77,7 @@ class StreamManager:
     async def get_streams(self):
         return {'streams' : [s.jsonify() for s in self.streams.values()]}
     
-    async def loop(self):
+    async def loop(self): 
         while True:
             s: Stream
             for s in self.streams.values():

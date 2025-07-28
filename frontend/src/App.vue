@@ -5,6 +5,8 @@
       <v-main class="main_style">
         <StreamViewer/>
         <StreamAdder/>
+        <ParserViewer/>
+        <ParserAdder/>
       </v-main>
       <v-footer></v-footer>
     </v-app>
@@ -12,6 +14,8 @@
 </template>
 
 <script setup>
+import ParserAdder from './components/ParserAdder.vue';
+import ParserViewer from './components/ParserViewer.vue';
 import StreamAdder from './components/StreamAdder.vue';
 import StreamViewer from './components/StreamViewer.vue';
 </script>

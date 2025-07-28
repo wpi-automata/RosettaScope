@@ -27,7 +27,7 @@ class ROSStream(Stream):
                             ROSStream.NAMESPACE, 
                             topic,
                             ROSStream.cb_group,
-                            self.parsers)
+                            self.parsers.copy())
         
 
     async def connect(self):

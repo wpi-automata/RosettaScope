@@ -5,7 +5,9 @@ class Stream(ABC):
     '''A Stream is an abstraction for a connection to a datastream from ROS,
     UDP, TCP, Serial...'''
     def __init__(self, name: str, parsers=[]):
-        super().__init__()
+        # super().__init__()
+        print(f'name: {name}')
+        print(f'parsers: {parsers}')
         self.name = name
         self.stream_type = None  # defined by subclass
         self.parsers: list[Parser] = parsers  # Streams 
